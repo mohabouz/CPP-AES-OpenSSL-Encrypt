@@ -12,7 +12,7 @@
 using namespace std;
 
 /**
- * The two function bellow are taken from the openssl official website
+ * The two functions bellow are taken from the openssl official website :
  * https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption 
  * You can read more there
  */
