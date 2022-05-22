@@ -150,7 +150,10 @@ string myEncrypt(string plainText, string pass) {
     // The hash contains the encrytion key and the initialization vector -> (iv)
     // so we divide it between the key and the iv using std::string method substr()
     string keyStr = hashStr.substr(0, 16);
+    // cout << "Key: " << keyStr << endl;
+
     string iv = hashStr.substr(16, 16);
+    // cout << "iv: " << iv << endl;
 
     // here we initiate the encryption process
     int cipherSize = encrypt(
@@ -171,6 +174,41 @@ string myEncrypt(string plainText, string pass) {
 
     // Append the base64 encode iv to the end of the base64 encoded cipher with a `:` in between
     string cipherStr((char *) base64Cipher.c_str());
-    string finalStr = cipherStr.append(":").append(base64Iv);
-    return finalStr;
+    return cipherStr;
+}
+
+string myDecrypt(string cipher, string pass) {
+
+    string cipherDecoded = base64_decode(cipher);
+    unsigned char * cipherBytes = (unsigned char *) cipherDecoded.c_str();
+
+    // Converting string to unsigned character (bytes) array
+    unsigned char *plainTextBytes = (unsigned char *) malloc(sizeof(char) * 1024);
+
+    // Allocate memory for hash bytes (chars) array with 65 elements
+    char *hash = (char *) malloc(sizeof(char) * 65);
+
+    hashPassword(
+        pass.c_str(),
+        hash
+    );
+
+    string hashStr(hash);
+
+    string keyStr = hashStr.substr(0, 16);
+    // cout << "Key: " << keyStr << endl;
+
+    string iv = hashStr.substr(16, 16);
+    // cout << "iv: " << iv << endl;
+
+    decrypt(
+        cipherBytes,
+        cipherDecoded.size(),
+        (unsigned char *) keyStr.c_str(),
+        (unsigned char *) iv.c_str(),
+        plainTextBytes
+    );
+
+    string plainText((char *) plainTextBytes);
+    return plainText;
 }

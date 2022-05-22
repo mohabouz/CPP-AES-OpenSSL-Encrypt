@@ -5,11 +5,13 @@ using namespace std;
     
 int main(int argc, char **args) {
 
-    string text = "test";
+    string text = "klfjklsdjfkjsdfklsdjfdfjsdkfsdkl klsdnflnsdkl fnsdknfsdkfklsndkflnsdklfnskld nksdfnkls dfnsklsdjfkjsdkasldjaskldjlaksdjdsaldkasldka;lskd;asdlasdk;askdklasjdklajsdklasjdklasjdklasjdasjkldjls";
     string pass = "this is a string";
     string encrypted = myEncrypt(text, pass);
+    string decrypted = myDecrypt(encrypted, pass);
 
-    cout << encrypted << endl;
+    cout << "Cipher: " << endl << encrypted << endl;
+    cout << "Decrypted cipher: " << endl <<  decrypted << endl;
 
     return EXIT_SUCCESS;
 }

@@ -19,3 +19,5 @@ void handleErrors();
 void hashPassword(const char *string, char outputBuffer[65]);
 
 string myEncrypt(string plainText, string pass);
+
+string myDecrypt(string cipher, string pass);
