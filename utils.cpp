@@ -117,7 +117,7 @@ void handleErrors() {
     abort();
 }
 
-void sha256_string(const char *string, char outputBuffer[65]) {
+void hashPassword(const char *string, char outputBuffer[65]) {
     unsigned char hash[SHA256_DIGEST_LENGTH];
     SHA256_CTX sha256;
     SHA256_Init(&sha256);
@@ -142,7 +142,7 @@ string myEncrypt(string plainText, string pass) {
     unsigned char *cipher = (unsigned char *) malloc(sizeof(char) * 1024);
 
     // Here we hash the plain text password
-    sha256_string((const char *)pass.c_str(), hash);
+    hashPassword((const char *)pass.c_str(), hash);
 
     // We convert the char array (hash variable) into an std::string
     string hashStr(hash);

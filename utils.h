@@ -16,6 +16,6 @@ int decrypt(unsigned char *ciphertext,
 
 void handleErrors();
 
-void sha256_string(const char *string, char outputBuffer[65]);
+void hashPassword(const char *string, char outputBuffer[65]);
 
 string myEncrypt(string plainText, string pass);
