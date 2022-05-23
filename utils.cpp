@@ -118,16 +118,27 @@ void handleErrors() {
 }
 
 void hashPassword(const char *string, char outputBuffer[65]) {
-    unsigned char hash[SHA256_DIGEST_LENGTH];
-    SHA256_CTX sha256;
-    SHA256_Init(&sha256);
-    SHA256_Update(&sha256, string, strlen(string));
-    SHA256_Final(hash, &sha256);
-    outputBuffer[64] = 0;
-    int i = 0;
-    for (i = 0; i < SHA256_DIGEST_LENGTH; i++) {
-        sprintf(outputBuffer + (i * 2), "%02x", hash[i]);
+
+    #if OPENSSL_VERSION_NUMBER < 0x10100000L
+    #  define EVP_MD_CTX_new   EVP_MD_CTX_create
+    #  define EVP_MD_CTX_free  EVP_MD_CTX_destroy
+    #endif
+
+    EVP_MD_CTX *ctx = EVP_MD_CTX_new();
+    unsigned char *hash = (unsigned char *) malloc(EVP_MAX_MD_SIZE * sizeof(char));
+    unsigned int hashSize = 65;
+    unsigned char * tempOutBuff =  (unsigned char *) malloc(hashSize * sizeof(char));
+
+    EVP_DigestInit(ctx, EVP_sha256());
+    EVP_DigestUpdate(ctx, string, strlen(string));
+    EVP_DigestFinal(ctx, tempOutBuff, &hashSize);
+
+    for(int i = 0 ; i < hashSize ; i++) {
+        sprintf(outputBuffer + (i * 2), "%02x", tempOutBuff[i]);
     }
+
+    outputBuffer[64] = 0;
+
 }
 
 string myEncrypt(string plainText, string pass) {
@@ -146,14 +157,15 @@ string myEncrypt(string plainText, string pass) {
 
     // We convert the char array (hash variable) into an std::string
     string hashStr(hash);
+    cout << "SHA256: " << hashStr << endl;
 
     // The hash contains the encrytion key and the initialization vector -> (iv)
     // so we divide it between the key and the iv using std::string method substr()
     string keyStr = hashStr.substr(0, 16);
-    // cout << "Key: " << keyStr << endl;
+    cout << "Key: " << keyStr << endl;
 
     string iv = hashStr.substr(16, 16);
-    // cout << "iv: " << iv << endl;
+    cout << "iv: " << iv << endl;
 
     // here we initiate the encryption process
     int cipherSize = encrypt(
@@ -165,22 +177,30 @@ string myEncrypt(string plainText, string pass) {
     );
 
     // We encode the cipher into a base64 encoded std::string  
-    string base64Cipher = base64_encode(
-        cipher,
-        cipherSize);
+    // string base64Cipher = base64_encode(
+    //     cipher,
+    //     cipherSize);
+
+    unsigned char base64Cipher[1024];
+    EVP_EncodeBlock(base64Cipher, cipher, cipherSize);
     
     // We encode the iv to the base64
     string base64Iv = base64_encode(iv);
 
     // Append the base64 encode iv to the end of the base64 encoded cipher with a `:` in between
-    string cipherStr((char *) base64Cipher.c_str());
+    // string cipherStr((char *) base64Cipher.c_str());
+    string cipherStr((char *) base64Cipher);
+
     return cipherStr;
 }
 
 string myDecrypt(string cipher, string pass) {
 
-    string cipherDecoded = base64_decode(cipher);
-    unsigned char * cipherBytes = (unsigned char *) cipherDecoded.c_str();
+    // string cipherDecoded = base64_decode(cipher);
+    // unsigned char * cipherBytes = (unsigned char *) cipherDecoded.c_str();
+
+    unsigned char *cipherBytes = (unsigned char *) malloc(sizeof(char) * 1024);
+    EVP_DecodeBlock(cipherBytes, (unsigned char *) cipher.c_str(), strlen(cipher.c_str()));
 
     // Converting string to unsigned character (bytes) array
     unsigned char *plainTextBytes = (unsigned char *) malloc(sizeof(char) * 1024);
@@ -188,13 +208,14 @@ string myDecrypt(string cipher, string pass) {
     // Allocate memory for hash bytes (chars) array with 65 elements
     char *hash = (char *) malloc(sizeof(char) * 65);
 
-    hashPassword(
-        pass.c_str(),
-        hash
-    );
+    // Here we hash the plain text password
+    hashPassword((const char *)pass.c_str(), hash);
 
+    // We convert the char array (hash variable) into an std::string
     string hashStr(hash);
 
+    // The hash contains the encrytion key and the initialization vector -> (iv)
+    // so we divide it between the key and the iv using std::string method substr()
     string keyStr = hashStr.substr(0, 16);
     // cout << "Key: " << keyStr << endl;
 
@@ -203,7 +224,7 @@ string myDecrypt(string cipher, string pass) {
 
     decrypt(
         cipherBytes,
-        cipherDecoded.size(),
+        strlen((char *)cipherBytes),
         (unsigned char *) keyStr.c_str(),
         (unsigned char *) iv.c_str(),
         plainTextBytes

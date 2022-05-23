@@ -9,7 +9,7 @@ add_executable(aes_test main.cpp utils.cpp)
 
 target_include_directories(aes_test PRIVATE 
     libs/b64
-    )
+)
 
 target_link_libraries(aes_test 
     b64
