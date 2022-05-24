@@ -5,7 +5,7 @@ The usage is very basic, you only need to provide the string you want to encrypt
 Also you can do the opposite, which is decrypting the cipher, given that you have the password with wich you have encrypted the latter string. 
 
 ## Usage example
-```
+```cpp
 #include <iostream>
 #include "utils.h"
 #include <string.h>
